@@ -5,7 +5,7 @@ import {
   MessageEmbed,
 } from 'discord.js'
 import { Command } from '../../Client/struct'
-import { Queue } from 'distube'
+import { Queue, Song } from 'distube'
 
 export = class extends Command {
   name = '노래'
@@ -48,6 +48,7 @@ export = class extends Command {
           type: 'STRING',
           name: '반복모드',
           description: '반복할 모드',
+          required: true,
           choices: [
             {
               name: '끄기',
@@ -65,20 +66,35 @@ export = class extends Command {
         },
       ],
     },
+    {
+      type: 'SUB_COMMAND',
+      name: '음량조절',
+      description: '노래의 음량을 조절합니다.',
+      options: [
+        {
+          type: 'NUMBER',
+          name: '음량',
+          description: '조절할 음량',
+          required: true,
+          minValue: 0,
+          maxValue: 100,
+        },
+      ],
+    },
+    {
+      type: 'SUB_COMMAND',
+      name: '건너뛰기',
+      description: '노래를 건너뜁니다.',
+    },
+    {
+      type: 'SUB_COMMAND',
+      name: '재생목록',
+      description: '현재의 재생목록입니다.',
+    },
   ]
   public execute(interaction: CommandInteraction<CacheType>): any {
     const member = interaction.guild?.members.cache.get(interaction.user.id)!
     const SUBCOMMAND_STRING = interaction.options.getSubcommand()
-    const status = (queue: Queue) =>
-      `볼륨: \`${queue.volume}%\` | 필터: \`${
-        queue.filters.join(', ') || 'Off'
-      }\` | 반복: \`${
-        queue.repeatMode
-          ? queue.repeatMode === 2
-            ? '모든 큐'
-            : '한곡만'
-          : '비활성'
-      }\` | 자동 재생: \`${queue.autoplay ? '활성' : '비활성'}\``
 
     if (!member.voice!.channel!)
       return interaction.reply({
@@ -86,18 +102,31 @@ export = class extends Command {
         ephemeral: true,
       })
 
-    interaction.client.distube.once('playSong', (queue, song) => {
-      interaction.reply({
-        embeds: [
-          new MessageEmbed()
-            .setTitle('노래 재생')
-            .setDescription(
-              `노래 [${song.name} - ${song.formattedDuration}](${song.url}) 재생을 시작했어요!`
-            )
-            .setThumbnail(song.thumbnail!),
-        ],
+    interaction.client.distube
+      .once('playSong', (queue, song) => {
+        interaction.reply({
+          embeds: [
+            new MessageEmbed()
+              .setTitle('노래 재생')
+              .setDescription(
+                `노래 [${song.name} - ${song.formattedDuration}](${song.url})을/를 시작했어요.`
+              )
+              .setThumbnail(song.thumbnail!),
+          ],
+        })
       })
-    })
+      .once('addSong', (queue, song) => {
+        interaction.reply({
+          embeds: [
+            new MessageEmbed()
+              .setTitle('노래 추가')
+              .setDescription(
+                `노래 [${song.name} - ${song.formattedDuration}](${song.url})을/를 추가했어요.`
+              )
+              .setThumbnail(song.thumbnail!),
+          ],
+        })
+      })
     if (SUBCOMMAND_STRING === '재생') {
       interaction.client.distube.play(
         member.voice!.channel!,
@@ -166,6 +195,46 @@ export = class extends Command {
         embeds: [
           new MessageEmbed().setTitle(`반복모드를 ${mode}로 설정했어요.`),
         ],
+      })
+    } else if (SUBCOMMAND_STRING === '음량조절') {
+      const queue = interaction.client.distube.getQueue(interaction)
+      const VOLUME_NUMBER = interaction.options.getNumber('음량')!
+      if (!queue)
+        return interaction.reply({ content: '큐가 없어요.', ephemeral: true })
+
+      queue.setVolume(VOLUME_NUMBER)
+      interaction.reply({
+        embeds: [
+          new MessageEmbed().setTitle(
+            `음량을 ${VOLUME_NUMBER}으로 설정했어요.`
+          ),
+        ],
+      })
+    } else if (SUBCOMMAND_STRING === '건너뛰기') {
+      const queue = interaction.client.distube.getQueue(interaction)
+      if (!queue)
+        return interaction.reply({ content: '큐가 없어요.', ephemeral: true })
+      queue.skip()
+      interaction.reply({
+        embeds: [new MessageEmbed().setTitle('현재 노래를 스킵했어요.')],
+      })
+    } else if (SUBCOMMAND_STRING === '재생목록') {
+      const queue = interaction.client.distube.getQueue(interaction)
+      if (!queue)
+        return interaction.reply({ content: '큐가 없어요.', ephemeral: true })
+      queue.songs.map((song: Song, i: number) => {
+        interaction.reply({
+          embeds: [
+            new MessageEmbed()
+              .setTitle('재생목록')
+              .setDescription(
+                `${i === 0 ? '재생중' : `${i}.`} ${song.name} - ${
+                  song.formattedDuration
+                }`
+              )
+              .setThumbnail(song.thumbnail!),
+          ],
+        })
       })
     }
   }

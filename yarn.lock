@@ -761,9 +761,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"discord-musicplay@workspace:.":
+"discord-musicplayer@workspace:.":
   version: 0.0.0-use.local
-  resolution: "discord-musicplay@workspace:."
+  resolution: "discord-musicplayer@workspace:."
   dependencies:
     "@discordjs/opus": ^0.7.0
     "@discordjs/voice": ^0.9.0

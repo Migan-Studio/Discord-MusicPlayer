@@ -1,5 +1,5 @@
 import { Client, Collection } from 'discord.js'
-import { cp, readdirSync } from 'fs'
+import { readdirSync } from 'fs'
 import path from 'path'
 import { Command } from '.'
 
