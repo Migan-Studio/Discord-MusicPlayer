@@ -1,5 +1,5 @@
 import { ActivityType, Client, GatewayIntentBits } from 'discord.js'
-import { DisTube, Queue } from 'distube'
+import { DisTube } from 'distube'
 import { CommandHandler } from './struct'
 import { YtDlpPlugin } from '@distube/yt-dlp'
 
