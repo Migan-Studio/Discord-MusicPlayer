@@ -2,14 +2,15 @@ import {
   ApplicationCommandOptionData,
   ApplicationCommandType,
   CommandInteraction,
+  PermissionResolvable,
 } from 'discord.js'
 
 export class Command {
   name: string = ''
   description: string = ''
-  type: ApplicationCommandType = 'CHAT_INPUT'
+  type: ApplicationCommandType = ApplicationCommandType.ChatInput
   options?: ApplicationCommandOptionData[]
-  defaultPermission?: boolean
+  defaultPermission?: PermissionResolvable
   public toJSON() {
     return {
       name: this.name,

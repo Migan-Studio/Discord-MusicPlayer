@@ -1,4 +1,4 @@
-import { Client, Intents } from 'discord.js'
+import { ActivityType, Client, GatewayIntentBits } from 'discord.js'
 import { DisTube, Queue } from 'distube'
 import { CommandHandler } from './struct'
 import { YtDlpPlugin } from '@distube/yt-dlp'
@@ -13,7 +13,7 @@ declare module 'discord.js' {
 export default class DMPClient extends Client {
   public constructor() {
     super({
-      intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES],
+      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
     })
   }
 
@@ -23,7 +23,6 @@ export default class DMPClient extends Client {
     emitAddListWhenCreatingQueue: false,
     emitAddSongWhenCreatingQueue: false,
     plugins: [new YtDlpPlugin()],
-    youtubeDL: false,
   })
 
   public commandHandler: CommandHandler = new CommandHandler(this)
@@ -35,7 +34,7 @@ export default class DMPClient extends Client {
     process.on('uncaughtException', console.error)
     this.once('ready', () => {
       console.info(`${this.user!.username} is has been started.`)
-      this.user!.setActivity({ name: '/도움말', type: 'LISTENING' })
+      this.user!.setActivity({ name: '/도움말', type: ActivityType.Listening })
     })
   }
 }

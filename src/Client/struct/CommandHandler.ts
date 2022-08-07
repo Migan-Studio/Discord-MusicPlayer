@@ -38,6 +38,7 @@ export class CommandHandler {
 
   private registrySlashCommand(module: Command) {
     this.client.once('ready', () => {
+      // @ts-ignore
       this.client.application?.commands.create(module.toJSON())
     })
   }
